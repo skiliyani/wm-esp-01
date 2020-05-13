@@ -26,7 +26,7 @@ void setup_wifi() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    delay(1000);
     Serial.print(".");
   }
 
@@ -79,7 +79,7 @@ void loop() {
   Serial.print(F("Distance: ")); Serial.print(hcsr04Dist); Serial.println(F("[cm]"));
   Serial.print("Publish message: ");
   Serial.println(msg);
-  client.publish("waterLevelTopic", msg);
+  client.publish("home/terrace/tank/water/level", msg);
   client.disconnect();
   Serial.println("Disconnected MQTT");
 
