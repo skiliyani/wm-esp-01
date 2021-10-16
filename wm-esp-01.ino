@@ -7,10 +7,10 @@
 
 const char* ssid = "SAYANI_WIFI";
 const char* password = "00011101";
-const char* mqtt_server = "192.168.8.10";
+const char* mqtt_server = "192.168.8.11";
 
 WiFiClient espClient;
-PubSubClient client(espClient);
+PubSubClient mqttClient(espClient);
 NewPing hcsr04(HCSR04_PIN_TRIG,HCSR04_PIN_ECHO);
 
 char msg[50];
@@ -26,7 +26,7 @@ void setup_wifi() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
+    delay(500);
     Serial.print(".");
   }
 
@@ -38,18 +38,30 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
+void disconnect_wifi() {
+  delay(10);
+
+  Serial.println();
+  Serial.print("Disconnecting from ");
+  Serial.println(ssid);
+  
+  WiFi.disconnect(true);
+  Serial.println("WiFi dsconnected");
+}
+
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
+  while (!mqttClient.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
-    String clientId = "WM-ESP-01";
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str())) {
+    if (mqttClient.connect(clientId.c_str())) {
       Serial.println("connected");
     } else {
       Serial.print("failed, rc=");
-      Serial.print(client.state());
+      Serial.print(mqttClient.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
       delay(5000);
@@ -60,34 +72,25 @@ void reconnect() {
 void setup() {
   pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
-  client.setServer(mqtt_server, 1883);
+  setup_wifi();
+  mqttClient.setServer(mqtt_server, 1883);
 }
 
 void loop() {
 
-  WiFi.forceSleepWake();
-  
-  setup_wifi();
-
-  if (!client.connected()) {
+  if (!mqttClient.connected()) {
     reconnect();
   }
-    
+
+  mqttClient.loop();
+   
   int hcsr04Dist = hcsr04.ping_cm();
   delay(10);
   snprintf (msg, 50, "%ld", hcsr04Dist);
   Serial.print(F("Distance: ")); Serial.print(hcsr04Dist); Serial.println(F("[cm]"));
   Serial.print("Publish message: ");
   Serial.println(msg);
-  client.publish("home/terrace/tank/water/level", msg);
-  client.disconnect();
-  Serial.println("Disconnected MQTT");
+  mqttClient.publish("home/terrace/tank/water/level", msg);
 
-  delay(500);
-  WiFi.disconnect();
-  Serial.println("Disconnected WiFi");
-
-  WiFi.forceSleepBegin();
-
-  delay(1000 * 60 * 5); // five minutes
+  delay(1000 * 60); // one minute
 }
