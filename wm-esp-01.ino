@@ -92,5 +92,5 @@ void loop() {
   Serial.println(msg);
   mqttClient.publish("home/terrace/tank/water/level", msg);
 
-  delay(1000 * 60); // one minute
+  delay(1000); // one sec
 }
