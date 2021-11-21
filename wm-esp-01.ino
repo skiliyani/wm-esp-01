@@ -13,6 +13,7 @@ WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 NewPing hcsr04(HCSR04_PIN_TRIG,HCSR04_PIN_ECHO);
 
+int prevDist = 32767;
 char msg[50];
 
 void setup_wifi() {
@@ -84,13 +85,21 @@ void loop() {
 
   mqttClient.loop();
    
-  int hcsr04Dist = hcsr04.ping_cm();
+  int dist = hcsr04.ping_cm();
+  //int dist = random(1, 100);
   delay(10);
-  snprintf (msg, 50, "%ld", hcsr04Dist);
-  Serial.print(F("Distance: ")); Serial.print(hcsr04Dist); Serial.println(F("[cm]"));
+  snprintf (msg, 50, "%ld", dist);
+  Serial.print(F("Distance: ")); Serial.print(dist); Serial.println(F("[cm]"));
   Serial.print("Publish message: ");
   Serial.println(msg);
   mqttClient.publish("home/terrace/tank/water/level", msg);
 
-  delay(60 * 1000); // one min
+  // Run more frequenctly when filling the tank
+  if(dist >= prevDist) {
+    delay(60 * 1000); // one min
+  } else {
+    delay(1000); // one sec
+  }
+
+  prevDist = dist;
 }
