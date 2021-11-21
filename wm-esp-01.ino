@@ -7,7 +7,7 @@
 
 const char* ssid = "SAYANI_WIFI";
 const char* password = "00011101";
-const char* mqtt_server = "192.168.8.11";
+const char* mqtt_server = "192.168.8.10"; //pi4
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -92,5 +92,5 @@ void loop() {
   Serial.println(msg);
   mqttClient.publish("home/terrace/tank/water/level", msg);
 
-  delay(1000); // one sec
+  delay(60 * 1000); // one min
 }
