@@ -139,9 +139,9 @@ void loop() {
     Serial.println(msg);
     mqttClient.publish("home/terrace/tank/water/level", msg);
 
-    if(dist >= prevDist) { // water is being consumed
+    if(dist == prevDist) {
       hcsr04Time.setdelay(5000);
-    } else { // water is being filled in
+    } else { // read the level again to confirm if it was not a wrong reading
       hcsr04Time.setdelay(1000);
     }
 
