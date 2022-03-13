@@ -16,9 +16,8 @@ const char* mqtt_server = "192.168.8.10"; //pi4
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 NewPing hcsr04(HCSR04_PIN_TRIG,HCSR04_PIN_ECHO);
-noDelay hcsr04Time(5000);
+noDelay hcsr04Time(1000);
 
-int prevDist = 32767;
 char msg[50];
 
 void setup_wifi() {
@@ -138,14 +137,6 @@ void loop() {
     Serial.print("Publish message: ");
     Serial.println(msg);
     mqttClient.publish("home/terrace/tank/water/level", msg);
-
-    if(dist == prevDist) {
-      hcsr04Time.setdelay(5000);
-    } else { // read the level again to confirm if it was not a wrong reading
-      hcsr04Time.setdelay(1000);
-    }
-
-    prevDist = dist;
   }
 
 }
